@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Snack Shack - Multiple Quantities</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    max-width: 600px;
+    margin: auto;
+    padding: 20px;
+    background: #fff0e6;
+  }
+  label {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+  }
+  input[type="checkbox"] {
+    transform: scale(1.3);
+    margin-right: 10px;
+  }
+  input[type="number"] {
+    width: 60px;
+    margin-left: auto;
+    padding: 5px;
+    font-size: 1rem;
+  }
+  #totalPrice {
+    font-weight: bold;
+    margin-top: 20px;
+    font-size: 1.2rem;
+  }
+  button {
+    margin-top: 25px;
+    padding: 12px;
+    font-size: 1rem;
+    background-color: #ff6f61;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    cursor: pointer;
+  }
+  button:hover {
+    background-color: #e04c3b;
+  }
+</style>
+</head>
+<body>
+
+<h2>Place Your Order</h2>
+<form id="orderForm">
+  <input type="text" id="name" placeholder="Enter your name" required style="width:100%;padding:10px;margin-bottom:20px;font-size:1rem;" />
+  
+  <label>
+    <input type="checkbox" name="item" value="Chilli Milli" data-price="10" />
+    Chilli Milli (Rs. 10)
+    <input type="number" min="1" value="1" disabled />
+  </label>
+
+  <label>
+    <input type="checkbox" name="item" value="Slanty" data-price="15" />
+    Slanty (Rs. 15)
+    <input type="number" min="1" value="1" disabled />
+  </label>
+
+  <label>
+    <input type="checkbox" name="item" value="Churan Chatni" data-price="5" />
+    Churan Chatni (Rs. 5)
+    <input type="number" min="1" value="1" disabled />
+  </label>
+
+  <label>
+    <input type="checkbox" name="item" value="Lollipop Mix" data-price="10" />
+    Lollipop Mix (Rs. 10)
+    <input type="number" min="1" value="1" disabled />
+  </label>
+
+  <label>
+    <input type="checkbox" name="item" value="Sweet Imli Bites" data-price="5" />
+    Sweet Imli Bites (Rs. 5)
+    <input type="number" min="1" value="1" disabled />
+  </label>
+
+  <label>
+    <input type="checkbox" name="item" value="Popcorn Packs" data-price="20" />
+    Popcorn Packs (Rs. 20)
+    <input type="number" min="1" value="1" disabled />
+  </label>
+
+  <div id="totalPrice">Total: Rs. 0</div>
+  
+  <button type="submit">Order Now</button>
+</form>
+
+<script>
+  const form = document.getElementById('orderForm');
+  const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+  const totalPriceEl = document.getElementById('totalPrice');
+
+  // Enable/disable quantity input based on checkbox checked status
+  checkboxes.forEach(cb => {
+    cb.addEventListener('change', () => {
+      const qtyInput = cb.nextElementSibling.nextElementSibling; // the number input after the checkbox label text
+      if (cb.checked) {
+        qtyInput.disabled = false;
+        qtyInput.focus();
+      } else {
+        qtyInput.disabled = true;
+        qtyInput.value = 1; // reset quantity when unchecked
+      }
+      updateTotal();
+    });
+  });
+
+  // Update total price whenever quantity changes
+  form.querySelectorAll('input[type="number"]').forEach(input => {
+    input.addEventListener('input', () => {
+      // Prevent negative or zero values
+      if (input.value < 1) input.value = 1;
+      updateTotal();
+    });
+  });
+
+  function updateTotal() {
+    let total = 0;
+    checkboxes.forEach(cb => {
+      if (cb.checked) {
+        const price = Number(cb.dataset.price);
+        const qty = Number(cb.nextElementSibling.nextElementSibling.value);
+        total += price * qty;
+      }
+    });
+    totalPriceEl.textContent = 'Total: Rs. ' + total;
+  }
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const name = form.name.value.trim();
+    if (!name) {
+      alert('Please enter your name.');
+      return;
+    }
+
+    let orderSummary = [];
+    checkboxes.forEach(cb => {
+      if (cb.checked) {
+        const qty = Number(cb.nextElementSibling.nextElementSibling.value);
+        orderSummary.push(`${cb.value} x${qty}`);
+      }
+    });
+
+    if (orderSummary.length === 0) {
+      alert('Please select at least one item.');
+      return;
+    }
+
+    const total = orderSummary.reduce((sum, item) => {
+      // Extract price and quantity from item string
+      const [itemName, qtyStr] = item.split(' x');
+      const qty = Number(qtyStr);
+      const price = Number([...checkboxes].find(cb => cb.value === itemName).dataset.price);
+      return sum + price * qty;
+    }, 0);
+
+    alert(`Thanks for your order, ${name}!\n\nYou ordered:\n- ${orderSummary.join('\n- ')}\n\nTotal: Rs. ${total}`);
+
+    form.reset();
+    form.querySelectorAll('input[type="number"]').forEach(input => input.disabled = true);
+    updateTotal();
+  });
+
+</script>
+</body>
+</html>
